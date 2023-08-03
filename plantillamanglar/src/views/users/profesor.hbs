@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <!-- Importar archivos de estilo y scripts -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css">
+  <style>
+    /* Estilos para el editor */
+    #editor {
+      border: 1px solid #ced4da;
+      padding: 10px;
+      height: 100px;
+      font-family: Arial, sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+      color: #212529;
+      background-color: #fff;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="content-wrapper">
+      <div id="root"></div>
+    </div>
+  </div>
+
+
+  <script type="text/babel" data-presets="react,stage-3">
+    function Preguntas({ preguntas, setPreguntas, volver }) {
+      const [preguntaActual, setPreguntaActual] = React.useState("")
+      const [indexPreguntaAEditar, setIndexPreguntaAEditar] = React.useState(-1)
+
+      function manejarAnadirOEditarPregunta() {
+        if (indexPreguntaAEditar > -1) {
+          const copiaPreguntas = [...preguntas]
+          copiaPreguntas.splice(indexPreguntaAEditar, 1, preguntaActual)
+          setPreguntas(copiaPreguntas)
+        } else {
+          setPreguntas([preguntaActual, ...preguntas])
+        }
+        setPreguntaActual("")
+      }
+      function manejarCambiosTextarea(e) {
+        setPreguntaActual(e.target.value)
+      }
+      function manejaEliminarPregunta(idx) {
+        const copiaPreguntas = [...preguntas]
+        copiaPreguntas.splice(idx, 1)
+        setPreguntas(copiaPreguntas)
+      }
+      function manejarEditarPregunta(idx) {
+        setPreguntaActual(preguntas[idx])
+        setIndexPreguntaAEditar(idx)
+      }
+
+      return (
+        <React.Fragment>
+          <button onClick={volver}>volver</button>
+          <h2>Preguntas para las guias</h2>
+          <textarea onChange={manejarCambiosTextarea} value={preguntaActual}></textarea>
+          <button onClick={manejarAnadirOEditarPregunta}>{indexPreguntaAEditar > -1 ? "Actualizar pregunta" : "Añadir pregunta"}</button>
+          {preguntas.map(
+            (pregunta, idx) => (
+              <div key={idx}>
+                <p>{pregunta}</p>
+                <button onClick={() => manejaEliminarPregunta(idx)}>eliminar</button>
+                <button onClick={() => manejarEditarPregunta(idx)}>editar</button>
+              </div>
+            )
+          )}
+        </React.Fragment>
+      )
+    }
+    
+    function Guias() {
+      const [guias, setGuias] = React.useState([])
+      const [descripcionGuiaActual, setDescripcionGuiaActual] = React.useState("")
+      const [indexGuiaParaIrAPreguntas, setIndexGuiaParaIrAPreguntas] = React.useState(-1)
+      const [indexGuiaAEditar, setIndexGuiaAEditar] = React.useState(-1)
+      const [cursoActual, setCursoActual] = React.useState(-1)
+      const [cursos, setCursos] = React.useState([])
+      
+      React.useEffect(() => {
+        fetch("/users/profesor/guias").then(res => res.json()).then(guias => setGuias(guias))
+        fetch("/users/profesor/cursos").then(res=>res.json()).then(cursos => setCursos(cursos))
+      }, [])
+
+      function manejarCambioDescripcionNuevaGuia(e) {
+        setDescripcionGuiaActual(e.target.value)
+      }
+      function manejarGurdarOEditarGuia() {
+        if (cursoActual == -1) return;
+        if (indexGuiaAEditar > -1) {
+          const copiaGuias = [...guias]
+          const laGuia = guias[indexGuiaAEditar]
+          copiaGuias.splice(indexGuiaAEditar, 1, { ...laGuia, descripcion: descripcionGuiaActual, curso: cursoActual })
+          fetch("/users/profesor/editarGuia", { method: "POST",  headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: laGuia._id, descripcion: descripcionGuiaActual }) })
+          setGuias(copiaGuias)
+          setIndexGuiaAEditar(-1)
+        } else {
+          const nuevaGuia = { descripcion: descripcionGuiaActual, preguntas: [], curso: cursoActual }
+          fetch("/users/profesor/nuevaGuia", { method: "POST",  headers: { "Content-Type": "application/json" }, body: JSON.stringify(nuevaGuia) })
+            .then(res => res.json()).then(({ id }) => {
+              setGuias([{ _id: id, ...nuevaGuia }, ...guias])
+            })
+        }
+        setDescripcionGuiaActual("")
+      }
+      function manejarIrAPreguntas(idx) {
+        setIndexGuiaParaIrAPreguntas(idx)
+      }
+      function manejarEliminarGuia(idx) {
+        const copiaGuias = [...guias]
+        fetch("/users/profesor/eliminarGuia", { method: "POST",  headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: guias[idx]._id }) })
+        copiaGuias.splice(idx, 1)
+        setGuias(copiaGuias)
+      }
+      function manejarSetPreguntas(preguntas) {
+        const copiaGuias = [...guias]
+        copiaGuias.splice(indexGuiaParaIrAPreguntas, 1, { ...guias[indexGuiaParaIrAPreguntas], preguntas })
+        fetch("/users/profesor/actualizarPreguntas", { method: "POST",  headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: guias[indexGuiaParaIrAPreguntas]._id, preguntas }) })
+        setGuias(copiaGuias)
+      }
+      function manejarVolver() {
+        setIndexGuiaParaIrAPreguntas(-1)
+      }
+      function manejarEditarGuia(idx) {
+        setIndexGuiaAEditar(idx)
+        setDescripcionGuiaActual(guias[idx].descripcion)
+        setCursoActual(guias[idx].curso)
+      }
+      function manejarCambioCurso(event) {
+        setCursoActual(event.target.value)
+      }
+
+      return (
+        <React.Fragment>
+          {indexGuiaParaIrAPreguntas > -1 ? (
+              <React.Fragment>
+                <h2>Guia: "{guias[indexGuiaParaIrAPreguntas].descripcion}"</h2>
+                <Preguntas volver={manejarVolver} preguntas={guias[indexGuiaParaIrAPreguntas].preguntas} setPreguntas={manejarSetPreguntas} /> 
+              </React.Fragment>
+            ) : (
+            <React.Fragment>
+              <h2>Bienvenido profesor: Listado de guias</h2>
+                <input onChange={manejarCambioDescripcionNuevaGuia} value={descripcionGuiaActual}></input>
+                <select value={cursoActual} onChange={manejarCambioCurso}>
+                  <option value="-1">selecciona el curso</option>
+                  {cursos.map(({ _id, curso }) => (
+                    <option key={_id} value={_id}>{curso}</option>
+                  ))}
+                </select>
+                <button onClick={manejarGurdarOEditarGuia}>{indexGuiaAEditar > -1 ? "Actualizar nombre guia" : "Añadir guia"}</button>
+                {
+                  guias.map((guia, idx) => (
+                    <div>
+                      <p>{guia.descripcion}</p>
+                      {cursos.length > 0 && <p>Curso: {cursos.find(c => c._id === guia.curso).curso}</p>}
+                      <p>Total preguntas: {guias[idx].preguntas.length}</p>
+                      <button onClick={() => manejarEliminarGuia(idx)}>eliminar</button>
+                      <button onClick={() => manejarEditarGuia(idx)}>Editar</button>
+                      <button onClick={() => manejarIrAPreguntas(idx)}>Preguntas</button>
+                    </div>)
+                  )
+                }
+            </React.Fragment>
+          )}
+        </React.Fragment>
+      )
+    }
+
+    var root = document.getElementById("root")
+    ReactDOM.render(<Guias />, root)
+
+  </script>
+
+</body>
+</html>

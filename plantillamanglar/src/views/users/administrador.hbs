@@ -1,0 +1,79 @@
+<div class="content-wrapper" style="background-color: #ffffff; padding: 20px;">
+  <h1>Bienvenido Administrador</h1>
+  ¡bienvenido(a) como Administrador!</span>
+  <!-- Botón de logout -->
+  <a href="/logout" class="logout-button">Logout</a>
+  <h2>Agregar Facultad y Programas</h2>
+
+  <form action="/agregar-universidad" method="POST">
+    <!-- Campos del formulario -->
+    <div class="form-group">
+      <label for="universidad">Nombre de la Universidad:</label>
+      <input type="text" id="universidad" name="universidad" class="form-control" required>
+    </div>
+    <div class="form-group">
+      <label for="facultad">Nombre de la Facultad:</label>
+      <input type="text" id="facultad" name="facultad" class="form-control" required>
+    </div>
+    <div class="form-group">
+      <label for="programa">Programa Académico:</label>
+      <input type="text" id="programa" name="programa" class="form-control" required>
+    </div>
+    <div class="form-group">
+      <label for="curso">Curso:</label>
+      <textarea id="curso" name="curso" class="form-control" required></textarea>
+    </div>
+    <div class="form-group">
+      <label for="profesor">Profesor:</label>
+      <select id="profesor" name="profesor" class="form-control" required>
+        {{#each profesores}}
+        <option value="{{this._id}}">{{this.name}}</option>
+        {{/each}}
+      </select>
+    </div>
+    <div class="form-group">
+      <label for="estudiantes">Estudiantes:</label>
+      <select id="estudiantes" name="estudiantes" class="form-control" required multiple>
+        {{#each estudiantes}}
+        <option value="{{this._id}}">{{this.name}}</option>
+        {{/each}}
+      </select>
+    </div>
+    <button type="submit" class="btn btn-primary">Agregar</button>
+  </form>
+</div>
+
+<div class="content-wrapper">
+  <h1>Administrador</h1>
+
+  <h2>Universidades Registradas</h2>
+  <% if (universidades.length === 0) { %>
+    <p>No se han registrado universidades.</p>
+  <% } else { %>
+    <ul>
+      <% universidades.forEach(function(universidad) { %>
+        <li>
+          <strong>Nombre:</strong> <%= universidad.nombre %>
+        </li>
+        <li>
+          <strong>Facultad:</strong> <%= universidad.facultad %>
+        </li>
+        <li>
+          <strong>Programa Académico:</strong> <%= universidad.programa %>
+        </li>
+        <li>
+          <strong>Curso:</strong> <%= universidad.curso %>
+        </li>
+        <br>
+      <% }); %>
+    </ul>
+  <% } %>
+</div>
+
+
+
+
+
+
+ 
+

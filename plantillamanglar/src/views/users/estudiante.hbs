@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <!-- Importar archivos de estilo y scripts -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="content-wrapper">
+      <h1>Bienvenido Estudiante</h1>
+      <span>Hola {{name}}, ¡bienvenido(a) como estudiante!</span>
+      <!-- Botón de logout -->
+      <a href="/users/logout" class="logout-button">Logout</a>
+      <div id="root"></div>
+    </div>
+  </div>
+  
+  <script type="text/babel" data-presets="react,stage-3">
+
+    function Guias() {
+      const [guias, setGuias] = React.useState([])
+      const [indexGuiaActual, setIndexGuiaActual] = React.useState(-1)
+
+      React.useEffect(() => {
+        fetch("/users/profesor/guias").then(res => res.json()).then(guias => setGuias(guias))
+      }, [])
+
+      function manejarVerPreguntas(idx) {
+        setIndexGuiaActual(idx)
+      }
+
+      return indexGuiaActual > -1 ? (
+        <div>
+          <br />
+          <button onClick={() => setIndexGuiaActual(-1)}>volver</button>
+          <p>Copie y pegue las siguientes preguntas en un documento, resuelvalas y envielas al profesor:</p>
+          <br />
+          {guias[indexGuiaActual].preguntas.map((pregunta, idx) => (
+            <p>{idx + 1}. {pregunta}</p>  
+          ))}
+        </div>
+      ) : (
+        <div>
+          <br />
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Nombre de la guia</th>
+                <th>Total preguntas</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {guias.map((guia, idx) => (
+                <tr key={idx}>
+                  <td>{guia.descripcion}</td>
+                  <td>{guia.preguntas.length}</td>
+                  <td>{guia.preguntas.length ? <button onClick={() => manejarVerPreguntas(idx)}>Ver preguntas</button> : null}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )
+    }
+
+    const root = document.getElementById("root")
+    ReactDOM.render(<Guias />, root)
+
+  </script>
+</body>
+</html>
