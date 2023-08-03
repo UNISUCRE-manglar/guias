@@ -155,7 +155,7 @@
                   guias.map((guia, idx) => (
                     <div>
                       <p>{guia.descripcion}</p>
-                      {cursos.length > 0 && <p>Curso: {cursos.find(c => c._id === guia.curso).curso}</p>}
+                      {cursos.length > 0 && <p>{cursos.find(c => c._id === guia.curso).curso}</p>}
                       <p>Total preguntas: {guias[idx].preguntas.length}</p>
                       <button onClick={() => manejarEliminarGuia(idx)}>eliminar</button>
                       <button onClick={() => manejarEditarGuia(idx)}>Editar</button>
