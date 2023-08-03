@@ -43,32 +43,7 @@
   </form>
 </div>
 
-<div class="content-wrapper">
-  <h1>Administrador</h1>
 
-  <h2>Universidades Registradas</h2>
-  <% if (universidades.length === 0) { %>
-    <p>No se han registrado universidades.</p>
-  <% } else { %>
-    <ul>
-      <% universidades.forEach(function(universidad) { %>
-        <li>
-          <strong>Nombre:</strong> <%= universidad.nombre %>
-        </li>
-        <li>
-          <strong>Facultad:</strong> <%= universidad.facultad %>
-        </li>
-        <li>
-          <strong>Programa Académico:</strong> <%= universidad.programa %>
-        </li>
-        <li>
-          <strong>Curso:</strong> <%= universidad.curso %>
-        </li>
-        <br>
-      <% }); %>
-    </ul>
-  <% } %>
-</div>
 
 
 
